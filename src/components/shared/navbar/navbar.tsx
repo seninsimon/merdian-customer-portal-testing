@@ -42,6 +42,7 @@ const Navbar: FC = () => {
       await axios.post("/api/logout");
       queryClient.removeQueries({ queryKey: ["me"] });
       await queryClient.refetchQueries({ queryKey: ["me"] });
+      await queryClient.setQueryData(["me"], null);
       router.replace("/login");
     } catch {
       notifications.show({
