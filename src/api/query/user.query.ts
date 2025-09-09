@@ -15,6 +15,6 @@ export const useMeQuery = () => {
       });
       return response.data.user;
     },
-    //  enabled: !!localStorage.getItem("ACS_TKN"), // only run if logged in
+     staleTime: 0,
   });
 };
