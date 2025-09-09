@@ -124,21 +124,21 @@ const QuoteForm: FC = () => {
     useDropDown<setmDocNoType>("SETM");
 
   const handleSubmit = (values: EnquiryPropsType) => {
-      const updatedDetails = values.enqDetails.map((item) => {
-    const weight = (item.actWeight || 0) * (item.quantity || 1);
-    return { ...item, chargeableWeight: weight };
-  });
+    const updatedDetails = values.enqDetails.map((item) => {
+      const weight = (item.actWeight || 0) * (item.quantity || 1);
+      return { ...item, chargeableWeight: weight };
+    });
 
-   const totalChargeable = updatedDetails.reduce(
-    (sum, item) => sum + item.chargeableWeight,
-    0
-  );
+    const totalChargeable = updatedDetails.reduce(
+      (sum, item) => sum + item.chargeableWeight,
+      0
+    );
 
-   const updatedValues = {
-    ...values,
-    enqDetails: updatedDetails,
-    chargeableWeight: totalChargeable,
-  };
+    const updatedValues = {
+      ...values,
+      enqDetails: updatedDetails,
+      chargeableWeight: totalChargeable,
+    };
     mutate(updatedValues, {
       onSuccess: () => {
         open();
@@ -199,7 +199,7 @@ const QuoteForm: FC = () => {
               data={setmDocNo}
               searchable
               withAsterisk
-              {...form.getInputProps("setmDocNo")} 
+              {...form.getInputProps("setmDocNo")}
             />
 
             <Select
