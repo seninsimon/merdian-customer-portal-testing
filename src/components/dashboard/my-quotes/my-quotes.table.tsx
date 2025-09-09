@@ -14,7 +14,7 @@ interface MyQuotesTableProps {
         origin: string;
         destination: string;
         date: Date;
-        time: Date;
+        time: string;
         status: string;
         weight: string;
         type: string;

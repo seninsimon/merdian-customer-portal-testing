@@ -72,8 +72,8 @@ export const AdBanner = () => {
         className="rounded-xl overflow-hidden"
       >
         {ads.map((ad, index) => {
-          const cleanFile = ad?.file?.trim().replace(/[}]/g, "");
-          const imageUrl = `${process.env.NEXT_PUBLIC_MEDIA_URL}/${cleanFile}`;
+         
+          const imageUrl = `${process.env.NEXT_PUBLIC_MEDIA_URL}/${ad.file}`;
 
           return (
             <Carousel.Slide key={index}>

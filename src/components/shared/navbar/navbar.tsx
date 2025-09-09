@@ -13,18 +13,17 @@ import { notifications } from "@mantine/notifications";
 
 import { useQueryClient } from "@tanstack/react-query";
 
-
 const Navbar: FC = () => {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
-  const [opened, { open, close }] = useDisclosure(false)
+  const [opened, { open, close }] = useDisclosure(false);
 
-  const { data: user, isLoading } = useMeQuery();
+  const { data: user, isLoading , refetch} = useMeQuery();
 
-   const queryClient = useQueryClient(); // ✅ instance, not class
+  const queryClient = useQueryClient(); // ✅ instance, not class
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -42,7 +41,7 @@ const Navbar: FC = () => {
       localStorage.clear();
       await axios.post("/api/logout");
       queryClient.removeQueries({ queryKey: ["me"] });
-      router.replace("/login"); 
+      router.replace("/login");
     } catch {
       notifications.show({
         title: "Logout failed",
@@ -56,6 +55,7 @@ const Navbar: FC = () => {
     try {
       localStorage.clear();
       await axios.post("/api/logout");
+       await refetch();
       router.replace("/login");
     } catch {
       notifications.show({
@@ -108,9 +108,7 @@ const Navbar: FC = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
-              {isLoading && (
-                <div className="h-[2.7rem] p-5"></div>
-              )}
+              {isLoading && <div className="h-[2.7rem] p-5"></div>}
 
               {user && (
                 <Button
@@ -122,17 +120,16 @@ const Navbar: FC = () => {
                   onClick={() => router.push("/user-info")}
                   className="text-sm"
                 >
-                  <span className="hidden lg:inline">
-                    {user.firstName + " " + user.lastName}
-                  </span>
-                  <span className="lg:hidden">Profile</span>
+                  {user.firstName + " " + user.lastName}
                 </Button>
               )}
 
-              {(!isLoading && !user) && (
+              {!isLoading && !user && (
                 <Button
                   onClick={() => handleLogin()}
-                  leftSection={<UserCircle2Icon size={16} className="inline-block" />}
+                  leftSection={
+                    <UserCircle2Icon size={16} className="inline-block" />
+                  }
                   h={"2.7rem"}
                   variant="light"
                 >
@@ -143,7 +140,9 @@ const Navbar: FC = () => {
               {user && (
                 <Button
                   h={"2.7rem"}
-                  rightSection={<ArrowRight size={16} className="inline-block" />}
+                  rightSection={
+                    <ArrowRight size={16} className="inline-block" />
+                  }
                   onClick={open}
                 >
                   Logout
@@ -177,10 +176,11 @@ const Navbar: FC = () => {
                 {navigationItems.map(({ label, path }) => (
                   <div
                     key={path}
-                    className={`p-2 cursor-pointer px-4 transition-all duration-200 ${pathname === path
-                      ? "bg-[#01137e] text-white"
-                      : "hover:bg-gray-100"
-                      }`}
+                    className={`p-2 cursor-pointer px-4 transition-all duration-200 ${
+                      pathname === path
+                        ? "bg-[#01137e] text-white"
+                        : "hover:bg-gray-100"
+                    }`}
                     onClick={() => router.push(path)}
                   >
                     <p className="text-sm lg:text-base">{label}</p>
@@ -225,7 +225,9 @@ const Navbar: FC = () => {
                       </Button>
                       <Button
                         fullWidth
-                        rightSection={<ArrowRight size={16} className="inline-block" />}
+                        rightSection={
+                          <ArrowRight size={16} className="inline-block" />
+                        }
                         onClick={open}
                         className="justify-start"
                       >
@@ -234,11 +236,13 @@ const Navbar: FC = () => {
                     </div>
                   )}
 
-                  {(!isLoading && !user) && (
+                  {!isLoading && !user && (
                     <Button
                       fullWidth
                       onClick={() => handleLogin()}
-                      leftSection={<UserCircle2Icon size={16} className="inline-block" />}
+                      leftSection={
+                        <UserCircle2Icon size={16} className="inline-block" />
+                      }
                       variant="light"
                       className="justify-start"
                     >
@@ -253,10 +257,11 @@ const Navbar: FC = () => {
                     {navigationItems.map(({ label, path }) => (
                       <button
                         key={path}
-                        className={`w-full text-left p-3 rounded-lg transition-colors ${pathname === path
-                          ? "bg-[#01137e] text-white"
-                          : "text-[#01137e] hover:bg-gray-100"
-                          }`}
+                        className={`w-full text-left p-3 rounded-lg transition-colors ${
+                          pathname === path
+                            ? "bg-[#01137e] text-white"
+                            : "text-[#01137e] hover:bg-gray-100"
+                        }`}
                         onClick={() => router.push(path)}
                       >
                         {label}
@@ -285,11 +290,7 @@ const Navbar: FC = () => {
             </span>
           </p>
           <div className="flex justify-end mt-4 space-x-2">
-            <Button
-              variant="outline"
-              onClick={close}
-              className="text-sm"
-            >
+            <Button variant="outline" onClick={close} className="text-sm">
               Cancel
             </Button>
             <Button

@@ -58,7 +58,7 @@ const QuotesTable: FC<QuotesTableProps> = () => {
         return "text-yellow-600";
       case "booking cancelled":
         return "text-red-600";
-        case "booked":
+      case "booked":
         return "text-green-600";
       default:
         return "text-gray-600";
@@ -81,7 +81,7 @@ const QuotesTable: FC<QuotesTableProps> = () => {
       return {
         ...item,
         date: parsedDate,
-        time: parsedDate,
+        time: item.time,
         status: item.status ?? "N/A",
       };
     });
@@ -114,6 +114,7 @@ const QuotesTable: FC<QuotesTableProps> = () => {
             <div className="font-medium text-sm">
               {dayjs(params.data.date).format("DD-MM-YYYY")}
             </div>
+            <div className="font-medium text-sm">{params.data.time}</div>
             <div
               className={`text-xs font-medium ${getStatusColor(
                 params.data.status
@@ -173,12 +174,22 @@ const QuotesTable: FC<QuotesTableProps> = () => {
                     </Menu.Target>
                     <Menu.Dropdown>
                       <Menu.Item
+                        disabled={
+                          params.data.status?.toLowerCase() === "expired" ||
+                          params.data.status?.toLowerCase() ===
+                            "waiting for quote"
+                        }
                         onClick={() => handleApprovalRoute(params.data)}
                       >
                         Approve
                       </Menu.Item>
                       <Menu.Item
                         leftSection={<Download size={14} />}
+                        disabled={
+                          params.data.status?.toLowerCase() === "expired" ||
+                          params.data.status?.toLowerCase() ===
+                            "waiting for quote"
+                        }
                         onClick={() =>
                           downloadQuote({
                             docType: params.data.docType,
@@ -204,6 +215,15 @@ const QuotesTable: FC<QuotesTableProps> = () => {
   // Desktop columns
   const desktopColDefs: ColDef[] = useMemo(() => {
     const baseCols: ColDef[] = [
+      {
+        headerName: "Sl. No",
+        width: 100,
+        valueGetter: (params) => params.node.rowIndex + 1,
+        sortable: false,
+        filter: false,
+        pinned: "left",
+      },
+
       {
         headerName:
           activeTab === "SE"
@@ -252,9 +272,7 @@ const QuotesTable: FC<QuotesTableProps> = () => {
         width: 140,
         pinned: "right",
         cellRenderer: (params) => (
-          <span
-            className={`font-medium ${getStatusColor(params.value)}`}
-          >
+          <span className={`font-medium ${getStatusColor(params.value)}`}>
             {params.value}
           </span>
         ),
@@ -293,6 +311,18 @@ const QuotesTable: FC<QuotesTableProps> = () => {
     ];
 
     if (activeTab === "SO") {
+  baseCols.unshift({
+    headerName: "Quote No.",
+    field: "prevDocNo",
+    sortable: true,
+    width: 180,
+    filter: true,
+    floatingFilter: true,
+  });
+}
+
+
+    if (activeTab === "SO") {
       baseCols.push({
         headerName: "AWB",
         field: "awb",
@@ -321,13 +351,17 @@ const QuotesTable: FC<QuotesTableProps> = () => {
               {params.data.approvedBy ? (
                 <Button
                   color="blue"
+                  disabled={
+                    isPending ||
+                    params.data.status?.toLowerCase() === "expired" ||
+                    params.data.status?.toLowerCase() === "waiting for quote"
+                  }
                   onClick={async () =>
                     await downloadQuote({
                       docType: params.data.docType,
                       docNo: params.data.docNo,
                     })
                   }
-                  disabled={isPending}
                   size="sm"
                   radius={"md"}
                   h={"1.8rem"}
@@ -339,7 +373,11 @@ const QuotesTable: FC<QuotesTableProps> = () => {
                   <Button
                     color="green"
                     onClick={() => handleApprovalRoute(params.data)}
-                    disabled={isPending}
+                    disabled={
+                      isPending ||
+                      params.data.status?.toLowerCase() === "expired" ||
+                      params.data.status?.toLowerCase() === "waiting for quote"
+                    }
                     size="sm"
                     radius={"md"}
                     h={"1.8rem"}

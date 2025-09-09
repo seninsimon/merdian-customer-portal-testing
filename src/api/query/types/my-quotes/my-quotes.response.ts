@@ -10,7 +10,7 @@ export interface Datum {
     docNo: string;
     date: string;
     time: string;
-    status: null;
+    status: string | null;
     originCntryDocNo: string;
     origin: string;
     destinationCntryDocNo: string;
