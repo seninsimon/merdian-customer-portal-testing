@@ -21,7 +21,7 @@ const Navbar: FC = () => {
 
   const [opened, { open, close }] = useDisclosure(false);
 
-  const { data: user, isLoading, refetch } = useMeQuery();
+  const { data: user, isLoading , refetch} = useMeQuery();
 
   const queryClient = useQueryClient(); // ✅ instance, not class
 
@@ -41,6 +41,7 @@ const Navbar: FC = () => {
       localStorage.clear();
       await axios.post("/api/logout");
       queryClient.removeQueries({ queryKey: ["me"] });
+      await queryClient.refetchQueries({ queryKey: ["me"] });
       router.replace("/login");
     } catch {
       notifications.show({
@@ -55,7 +56,7 @@ const Navbar: FC = () => {
     try {
       localStorage.clear();
       await axios.post("/api/logout");
-      await refetch();
+       await refetch();
       router.replace("/login");
     } catch {
       notifications.show({
