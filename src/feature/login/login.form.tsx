@@ -42,7 +42,7 @@ const LoginForm: FC = () => {
 
                     await queryClient.invalidateQueries({ queryKey: ["me"] });
                     await queryClient.refetchQueries({ queryKey: ["me"] });
-                    
+                    window.location.reload();
                     
                     router.push('/');
                 },
