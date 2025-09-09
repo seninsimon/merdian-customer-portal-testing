@@ -40,9 +40,10 @@ const LoginForm: FC = () => {
                     localStorage.setItem(LOCAL_STORAGE_KEYS.ACCESS_TOKEN, data.data.accessToken);
                     localStorage.setItem(LOCAL_STORAGE_KEYS.REFRESH_TOKEN, data.data.refreshToken);
 
-                    await queryClient.invalidateQueries({ queryKey: ["me"] });
-                    await queryClient.refetchQueries({ queryKey: ["me"] });
-
+                    // await queryClient.invalidateQueries({ queryKey: ["me"] });
+                    // await queryClient.refetchQueries({ queryKey: ["me"] });
+                    queryClient.setQueryData(["me"], data.data.user);
+                    
                     router.push('/');
                 },
                 onError: (error: Error) => {
