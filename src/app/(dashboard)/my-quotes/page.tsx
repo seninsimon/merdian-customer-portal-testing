@@ -469,6 +469,7 @@ const QuotesTable: FC<QuotesTableProps> = () => {
               desktopColDefs={desktopColDefs}
               downloadQuote={downloadQuote}
               handleApprovalRoute={handleApprovalRoute}
+              
             />
           )}
         </div>
