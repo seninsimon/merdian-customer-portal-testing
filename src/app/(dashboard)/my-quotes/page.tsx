@@ -311,16 +311,15 @@ const QuotesTable: FC<QuotesTableProps> = () => {
     ];
 
     if (activeTab === "SO") {
-  baseCols.unshift({
-    headerName: "Quote No.",
-    field: "prevDocNo",
-    sortable: true,
-    width: 180,
-    filter: true,
-    floatingFilter: true,
-  });
-}
-
+      baseCols.unshift({
+        headerName: "Quote No.",
+        field: "prevDocNo",
+        sortable: true,
+        width: 180,
+        filter: true,
+        floatingFilter: true,
+      });
+    }
 
     if (activeTab === "SO") {
       baseCols.push({
@@ -393,6 +392,12 @@ const QuotesTable: FC<QuotesTableProps> = () => {
                     <Menu.Dropdown>
                       <Menu.Item
                         leftSection={<Download size={16} />}
+                        disabled={
+                          isPending ||
+                          params.data.status?.toLowerCase() === "expired" ||
+                          params.data.status?.toLowerCase() ===
+                            "waiting for quote"
+                        }
                         onClick={() =>
                           downloadQuote({
                             docType: params.data.docType,
