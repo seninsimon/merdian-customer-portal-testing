@@ -13,6 +13,8 @@ import { useForm } from "@mantine/form";
 import { useQuoteApproveMutation } from "@/api/mutation/approve.mutation";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCitiesQuery } from "@/api/query/city.query";
+import { useEnquiryDetails } from "@/api/query/enquiery-details";
+import dayjs from "dayjs";
 
 const QuoteApprovePage: React.FC = () => {
   const searchParams = useSearchParams();
@@ -57,14 +59,14 @@ const QuoteApprovePage: React.FC = () => {
         !value
           ? "Contact email is required"
           : !/^\S+@\S+\.\S+$/.test(value)
-            ? "Invalid email"
-            : null,
+          ? "Invalid email"
+          : null,
       contactNo: (value) =>
         !value
           ? "Contact number is required"
           : !/^\d{7,15}$/.test(value)
-            ? "Contact number must be 7–15 digits"
-            : null,
+          ? "Contact number must be 7–15 digits"
+          : null,
       contactPerson: (value) => (!value ? "Contact person is required" : null),
 
       consignee: (value) => (!value ? "Consignee name is required" : null),
@@ -87,20 +89,20 @@ const QuoteApprovePage: React.FC = () => {
         !value
           ? "Consignee email is required"
           : !/^\S+@\S+\.\S+$/.test(value)
-            ? "Invalid email"
-            : null,
+          ? "Invalid email"
+          : null,
       consigneeMobile: (value) =>
         !value
           ? "Consignee mobile is required"
           : !/^\d{7,15}$/.test(value)
-            ? "Mobile must be 7–15 digits"
-            : null,
+          ? "Mobile must be 7–15 digits"
+          : null,
       consigneePhone: (value) =>
         !value
           ? "Consignee phone is required"
           : !/^\d{7,15}$/.test(value)
-            ? "Phone must be 7–15 digits"
-            : null,
+          ? "Phone must be 7–15 digits"
+          : null,
 
       shipper: (value) => (!value ? "Shipper name is required" : null),
       shipperAddress: (value) =>
@@ -122,20 +124,20 @@ const QuoteApprovePage: React.FC = () => {
         !value
           ? "Shipper email is required"
           : !/^\S+@\S+\.\S+$/.test(value)
-            ? "Invalid email"
-            : null,
+          ? "Invalid email"
+          : null,
       shipperMobile: (value) =>
         !value
           ? "Shipper mobile is required"
           : !/^\d{7,15}$/.test(value)
-            ? "Mobile must be 7–15 digits"
-            : null,
+          ? "Mobile must be 7–15 digits"
+          : null,
       shipperPhone: (value) =>
         !value
           ? "Shipper phone is required"
           : !/^\d{7,15}$/.test(value)
-            ? "Phone must be 7–15 digits"
-            : null,
+          ? "Phone must be 7–15 digits"
+          : null,
     },
   });
 
@@ -150,9 +152,82 @@ const QuoteApprovePage: React.FC = () => {
     router.push("/my-quotes");
   });
 
+  const { data: enquiryDetails, isLoading: enquiryLoading } = useEnquiryDetails(
+    docType,
+    docNo
+  );
+
+  if (enquiryLoading) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="text-center">
+        <Loader size="lg" variant="dots" className="mx-auto mb-4" />
+        <p className="text-gray-600">Loading quotation details...</p>
+      </div>
+    </div>
+  );
+}
+
+  if (!enquiryDetails?.data) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            No Quotation Details Found
+          </h1>
+          <p className="text-gray-600 mb-4">
+            The quotation you are looking for does not exist or may have expired.
+          </p>
+          <Button onClick={() => router.push("/my-quotes")}>
+            Back to My Quotes
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 p-4">
+      {enquiryLoading ? (
+        <div className="p-2 text-gray-500">Loading quotation details...</div>
+      ) : enquiryDetails?.data ? (
+        <div
+          className="bg-white rounded-lg p-4 mb-6  border border-black/10 
+  max-w-[400px] sm:max-w-[600px] md:max-w-[1250px]  
+  mx-auto"
+        >
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">
+            Quotation Details (Ref: {enquiryDetails.data[0].docNo})
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-gray-700">
+            <div>
+              <b>Date:</b>{" "}
+              {dayjs(enquiryDetails.data[0].date).format("DD-MM-YYYY")}
+            </div>
+            <div>
+              <b>Origin:</b> {enquiryDetails.data[0].origin}
+            </div>
+            <div>
+              <b>Destination:</b> {enquiryDetails.data[0].destination}
+            </div>
+            <div>
+              <b>Type:</b> {enquiryDetails.data[0].type}
+            </div>
+            <div>
+              <b>Service Mode:</b> {enquiryDetails.data[0].service || "N/A"}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="p-4 text-gray-500">No enquiry details found</div>
+      )}
+
+      
+
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 p-4"
+      >
         <TextInput
           label="Contact Email"
           placeholder="Enter contact email"
@@ -176,7 +251,10 @@ const QuoteApprovePage: React.FC = () => {
         />
 
         {/* Consignee Section */}
-        <Fieldset legend={<p className="text-xl font-semibold px-2">Consignee</p>} className="col-span-1 sm:col-span-2 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+        <Fieldset
+          legend={<p className="text-xl font-semibold px-2">Consignee</p>}
+          className="col-span-1 sm:col-span-2 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5"
+        >
           <TextInput
             label="Name"
             placeholder="Enter consignee name"
@@ -185,8 +263,17 @@ const QuoteApprovePage: React.FC = () => {
             {...form.getInputProps("consignee")}
           />
           <div className="col-span-1 sm:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <TextInput label="Address" placeholder="Enter consignee address" withAsterisk {...form.getInputProps("consigneeAddress")} />
-            <TextInput label="Address 1" placeholder="Enter consignee address 1" {...form.getInputProps("consigneeAddress1")} />
+            <TextInput
+              label="Address"
+              placeholder="Enter consignee address"
+              withAsterisk
+              {...form.getInputProps("consigneeAddress")}
+            />
+            <TextInput
+              label="Address 1"
+              placeholder="Enter consignee address 1"
+              {...form.getInputProps("consigneeAddress1")}
+            />
           </div>
           <Select
             label="City"
@@ -235,7 +322,10 @@ const QuoteApprovePage: React.FC = () => {
         </Fieldset>
 
         {/* Shipper Section */}
-        <Fieldset legend={<p className="text-xl font-semibold px-2">Shipper</p>} className="col-span-1 sm:col-span-2 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+        <Fieldset
+          legend={<p className="text-xl font-semibold px-2">Shipper</p>}
+          className="col-span-1 sm:col-span-2 lg:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5"
+        >
           <TextInput
             label="Name"
             placeholder="Enter shipper name"
@@ -244,8 +334,17 @@ const QuoteApprovePage: React.FC = () => {
             {...form.getInputProps("shipper")}
           />
           <div className="col-span-1 sm:col-span-2 lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <TextInput label="Address" placeholder="Enter shipper address" withAsterisk {...form.getInputProps("shipperAddress")} />
-            <TextInput label="Address 1" placeholder="Enter shipper address 1" {...form.getInputProps("shipperAddress1")} />
+            <TextInput
+              label="Address"
+              placeholder="Enter shipper address"
+              withAsterisk
+              {...form.getInputProps("shipperAddress")}
+            />
+            <TextInput
+              label="Address 1"
+              placeholder="Enter shipper address 1"
+              {...form.getInputProps("shipperAddress1")}
+            />
           </div>
           <Select
             label="City"
@@ -294,7 +393,7 @@ const QuoteApprovePage: React.FC = () => {
         </Fieldset>
 
         <Textarea
-        label="Remarks"
+          label="Remarks"
           placeholder="Enter additional notes or instructions"
           className="col-span-1 sm:col-span-2 lg:col-span-12 mt-5"
           {...form.getInputProps("remarks")}
@@ -302,7 +401,11 @@ const QuoteApprovePage: React.FC = () => {
 
         {/* Submit Button */}
         <div className="flex col-span-1 sm:col-span-2 lg:col-span-12 justify-end mt-5">
-          <Button type="submit" loading={mutation.isPending} className="w-full sm:w-auto">
+          <Button
+            type="submit"
+            loading={mutation.isPending}
+            className="w-full sm:w-auto"
+          >
             Approve this quote
           </Button>
         </div>
