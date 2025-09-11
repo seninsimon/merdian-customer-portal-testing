@@ -209,6 +209,8 @@ const MyQuotesTable: FC<MyQuotesTableProps> = ({
                 activeTab === "SE" &&
                 params.data?.docNo?.toLowerCase().startsWith("qa"),
             }}
+            enableCellTextSelection={true}
+            ensureDomOrder={true}
           />
         </div>
       )}
