@@ -12,6 +12,8 @@ import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { Datum } from "@/api/query/types/my-quotes/my-quotes.response";
 import dynamic from "next/dynamic";
+import { Modal } from "@mantine/core";
+import { useEnquiryDetails } from "@/api/query/enquiery-details";
 
 const MyQuotesTable = dynamic(
   () => import("@/components/dashboard/my-quotes/my-quotes.table"),
@@ -23,6 +25,9 @@ const MyQuotesTable = dynamic(
 const QuotesTable: FC<QuotesTableProps> = () => {
   const [activeTab, setActiveTab] = useState<string | null>("SQ");
   const router = useRouter();
+  const [opened, setOpened] = useState(false);
+  const [docType, setDocType] = useState<string | null>(null);
+  const [docNo, setDocNo] = useState<string | null>(null);
 
   const {
     data: myQuotes,
@@ -44,6 +49,11 @@ const QuotesTable: FC<QuotesTableProps> = () => {
       `/approve?docType=${quote.docType}&docNo=${quote.docNo}&cntryDocNo=${quote.destinationCntryDocNo}&originCntryDocNo=${quote.originCntryDocNo}`
     );
   };
+
+  const { data: enquiryDetails, isLoading: enquiryLoading } = useEnquiryDetails(
+    docType ?? "",
+    docNo ?? ""
+  );
 
   // ✅ Helper function for status colors
   const getStatusColor = (status: string) => {
@@ -69,12 +79,12 @@ const QuotesTable: FC<QuotesTableProps> = () => {
   const rowData = useMemo(() => {
     let list: Datum[] = [];
 
-    if (activeTab === "SE") {
-      // merge enquiries + quotes
-      list = [...(myQuotes?.data ?? []), ...(myQuotesAll?.data ?? [])];
-    } else {
-      list = myQuotes?.data ?? [];
-    }
+    // if (activeTab === "SE") {
+    //   // merge enquiries + quotes
+    //   list = [...(myQuotes?.data ?? []), ...(myQuotesAll?.data ?? [])];
+    // } else {
+    list = myQuotes?.data ?? [];
+    // }
 
     return list.map((item) => {
       const parsedDate = dayjs(item.date, "YYYY-MM-DD HH:mm:ss.SSSZ").toDate();
@@ -227,7 +237,7 @@ const QuotesTable: FC<QuotesTableProps> = () => {
       {
         headerName:
           activeTab === "SE"
-            ? "Enquiry No."
+            ? "Reference No."
             : activeTab === "SQ"
             ? "Quote No."
             : activeTab === "SO"
@@ -284,6 +294,18 @@ const QuotesTable: FC<QuotesTableProps> = () => {
         width: 120,
         filter: true,
         floatingFilter: true,
+        cellRenderer: (params: { data: Datum }) => (
+          <button
+            className="text-blue-600 underline cursor-pointer"
+            onClick={() => {
+              setDocType(params.data.docType); // set selected docType
+              setDocNo(params.data.docNo); // set selected docNo
+              setOpened(true); // open modal
+            }}
+          >
+            {params.data.weight} kg
+          </button>
+        ),
       },
       {
         headerName: "Type",
@@ -437,6 +459,17 @@ const QuotesTable: FC<QuotesTableProps> = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm">
+          <div className="flex justify-end p-3 border-b">
+            <Button
+              onClick={() => refetch()}
+              leftSection={<RefreshCw className="w-4 h-4" />}
+              size="xs"
+              variant="light"
+            >
+              Refresh
+            </Button>
+          </div>
+
           {myQuotesError ? (
             <div className="flex items-center justify-center p-8 sm:p-12">
               <div className="text-center max-w-md">
@@ -469,11 +502,52 @@ const QuotesTable: FC<QuotesTableProps> = () => {
               desktopColDefs={desktopColDefs}
               downloadQuote={downloadQuote}
               handleApprovalRoute={handleApprovalRoute}
-              
             />
           )}
         </div>
       </div>
+
+      <Modal
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title="Item Details"
+        centered
+        size="lg"
+      >
+        {enquiryLoading ? (
+          <div className="text-center py-6">Loading...</div>
+        ) : enquiryDetails?.data[0]?.itemdetails?.length ? (
+          <div className="space-y-4">
+            {enquiryDetails.data[0].itemdetails.map((item, i) => (
+              <div
+                key={i}
+                className="border rounded-lg p-3 shadow-sm text-sm flex flex-col gap-1"
+              >
+                <div>
+                  <b>Quantity:</b> {item.quantity}
+                </div>
+                <div>
+                  <b>Actual Weight:</b> {item.actWeight} kg
+                </div>
+                <div>
+                  <b>Chargeable Weight:</b> {item.chargeableWeight} kg
+                </div>
+                <div>
+                  <b>Dimensions:</b> {item.lengthInCm} × {item.breadthInCm} ×{" "}
+                  {item.heightInCm} cm
+                </div>
+                <div>
+                  <b>Girth:</b> {item.girth} cm
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-gray-500">
+            No item details found
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

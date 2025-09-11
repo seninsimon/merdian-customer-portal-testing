@@ -15,11 +15,15 @@ import {
 } from "@/types/get-a-quote/quote-form.type";
 import { useDropDown } from "@/api/query/drop-down.query";
 import { Country, setmDocNoType } from "@/types/quote.form/quote.form.type";
+import { useQueryClient } from "@tanstack/react-query";
+
 
 const QuoteForm: FC = () => {
   const { mutate, isPending } = useEnquiryMutation();
   const router = useRouter();
   const [opened, { open, close }] = useDisclosure(false);
+  const queryClient = useQueryClient();
+
 
   const form = useForm<EnquiryPropsType>({
     initialValues: {
@@ -141,6 +145,7 @@ const QuoteForm: FC = () => {
     };
     mutate(updatedValues, {
       onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["customer-enquiries"] });
         open();
       },
       onError: (err) => {
