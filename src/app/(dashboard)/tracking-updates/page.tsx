@@ -212,9 +212,9 @@ const AWBDashboard: React.FC = () => {
                             className="pb-4"
                           >
                             <div className="space-y-1">
-                              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
+                              {/* <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
                                 {followUp.description ?? "No detailed description available"}
-                              </p>
+                              </p> */}
                               <p className="text-gray-400 text-xs">
                                 {new Date(followUp.timeUtc).toLocaleString()}
                               </p>
