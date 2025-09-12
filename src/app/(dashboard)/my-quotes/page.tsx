@@ -1,6 +1,6 @@
 "use client";
 
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { AlertCircle, Download, MoreHorizontal, RefreshCw } from "lucide-react";
 import { ActionIcon, Button, Menu } from "@mantine/core";
 import { useMyQuotesQuery } from "@/api/query/customer-enquery";
@@ -35,6 +35,16 @@ const QuotesTable: FC<QuotesTableProps> = () => {
     isError: myQuotesError,
     refetch,
   } = useMyQuotesQuery(activeTab);
+
+  useEffect(() => {
+    refetch();
+
+    const interval = setInterval(() => {
+      refetch();
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   const { data: myQuotesAll } = useMyQuotesQuery("SQ"); // fetch quotes separately for merge in SE tab
   const { mutateAsync: downloadQuote, isPending } = useDownloadQuote();
@@ -446,7 +456,7 @@ const QuotesTable: FC<QuotesTableProps> = () => {
   return (
     <div className="bg-gray-50 pt-24 sm:pt-28 md:pt-32 lg:pt-40 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-3">
+        <div className="mb-3 flex items-center justify-between">
           <FloatingIndicator
             data={[
               { label: "Enquiries", value: "SE" },
@@ -456,10 +466,18 @@ const QuotesTable: FC<QuotesTableProps> = () => {
             active={activeTab}
             setActive={setActiveTab}
           />
+          <Button
+            onClick={() => refetch()}
+            leftSection={<RefreshCw className="w-4 h-4" />}
+            size="xs"
+            variant="light"
+          >
+            Refresh
+          </Button>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm">
-          <div className="flex justify-end p-3 border-b">
+          {/* <div className="flex justify-end p-3 border-b">
             <Button
               onClick={() => refetch()}
               leftSection={<RefreshCw className="w-4 h-4" />}
@@ -468,7 +486,7 @@ const QuotesTable: FC<QuotesTableProps> = () => {
             >
               Refresh
             </Button>
-          </div>
+          </div> */}
 
           {myQuotesError ? (
             <div className="flex items-center justify-center p-8 sm:p-12">
@@ -508,99 +526,113 @@ const QuotesTable: FC<QuotesTableProps> = () => {
       </div>
 
       <Modal
-  opened={opened}
-  onClose={() => setOpened(false)}
-  title={
-    <div className="flex items-center gap-2">
-      <h2 className="text-xl font-medium text-gray-900">Package Details</h2>
-      <span className="text-sm text-gray-500">
-        (Ref: {enquiryDetails?.data[0]?.docNo ?? "N/A"})
-      </span>
-    </div>
-  }
-  centered
-  size="lg"
-  className="rounded-lg bg-white shadow-lg"
-  overlayProps={{
-    color: "gray",
-    opacity: 0.55,
-    blur: 3,
-  }}
->
-  {/* Header Info Section */}
-  <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600">
-    <div className="flex flex-col">
-      <span className="font-medium text-gray-800">Date</span>
-      <span>
-        {enquiryDetails?.data[0]?.date
-          ? dayjs(enquiryDetails.data[0].dateTime).format("DD-MM-YYYY")
-          : "N/A"}
-      </span>
-    </div>
-    <div className="flex flex-col">
-      <span className="font-medium text-gray-800">Origin</span>
-      <span>{enquiryDetails?.data[0]?.origin ?? "N/A"}</span>
-    </div>
-    <div className="flex flex-col">
-      <span className="font-medium text-gray-800">Destination</span>
-      <span>{enquiryDetails?.data[0]?.destination ?? "N/A"}</span>
-    </div>
-    <div className="flex flex-col">
-      <span className="font-medium text-gray-800">Type</span>
-      <span>{enquiryDetails?.data[0]?.type ?? "N/A"}</span>
-    </div>
-    <div className="flex flex-col">
-      <span className="font-medium text-gray-800">Service Mode</span>
-      <span>{enquiryDetails?.data[0]?.service ?? "N/A"}</span>
-    </div>
-  </div>
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title={
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-medium text-gray-900">
+              Package Details
+            </h2>
+            <span className="text-sm text-gray-500">
+              (Ref: {enquiryDetails?.data[0]?.docNo ?? "N/A"})
+            </span>
+          </div>
+        }
+        centered
+        size="lg"
+        className="rounded-lg bg-white shadow-lg"
+        overlayProps={{
+          color: "gray",
+          opacity: 0.55,
+          blur: 3,
+        }}
+      >
+        {/* Header Info Section */}
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600">
+          <div className="flex flex-col">
+            <span className="font-medium text-gray-800">Date</span>
+            <span>
+              {enquiryDetails?.data[0]?.date
+                ? dayjs(enquiryDetails.data[0].dateTime).format("DD-MM-YYYY")
+                : "N/A"}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-medium text-gray-800">Origin</span>
+            <span>{enquiryDetails?.data[0]?.origin ?? "N/A"}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-medium text-gray-800">Destination</span>
+            <span>{enquiryDetails?.data[0]?.destination ?? "N/A"}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-medium text-gray-800">Type</span>
+            <span>{enquiryDetails?.data[0]?.type ?? "N/A"}</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-medium text-gray-800">Service Mode</span>
+            <span>{enquiryDetails?.data[0]?.service ?? "N/A"}</span>
+          </div>
+        </div>
 
-  {/* Item Details Table */}
-  {enquiryLoading ? (
-    <div className="flex justify-center items-center py-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-400"></div>
-      <span className="ml-2 text-gray-500">Loading...</span>
-    </div>
-  ) : enquiryDetails?.data[0]?.itemdetails?.length ? (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-sm text-gray-600">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">#</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Quantity</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Actual Weight (kg)</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Chargeable Weight (kg)</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Dimensions (cm)</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-700">Girth (cm)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {enquiryDetails.data[0].itemdetails.map((item, i) => (
-            <tr
-              key={i}
-              className={`${
-                i % 2 === 0 ? "bg-white" : "bg-gray-50"
-              } hover:bg-gray-100 transition-colors duration-150`}
-            >
-              <td className="px-4 py-2.5">{i + 1}</td>
-              <td className="px-4 py-2.5">{item.quantity}</td>
-              <td className="px-4 py-2.5">{item.actWeight}</td>
-              <td className="px-4 py-2.5">{item.chargeableWeight}</td>
-              <td className="px-4 py-2.5">
-                {item.lengthInCm} × {item.breadthInCm} × {item.heightInCm}
-              </td>
-              <td className="px-4 py-2.5">{item.girth}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  ) : (
-    <div className="text-center py-8 text-gray-500">
-      No item details found
-    </div>
-  )}
-</Modal>
+        {/* Item Details Table */}
+        {enquiryLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-400"></div>
+            <span className="ml-2 text-gray-500">Loading...</span>
+          </div>
+        ) : enquiryDetails?.data[0]?.itemdetails?.length ? (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-sm text-gray-600">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium text-gray-700">
+                    #
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-700">
+                    Quantity
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-700">
+                    Actual Weight (kg)
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-700">
+                    Chargeable Weight (kg)
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-700">
+                    Dimensions (cm)
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-700">
+                    Girth (cm)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {enquiryDetails.data[0].itemdetails.map((item, i) => (
+                  <tr
+                    key={i}
+                    className={`${
+                      i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    } hover:bg-gray-100 transition-colors duration-150`}
+                  >
+                    <td className="px-4 py-2.5">{i + 1}</td>
+                    <td className="px-4 py-2.5">{item.quantity}</td>
+                    <td className="px-4 py-2.5">{item.actWeight}</td>
+                    <td className="px-4 py-2.5">{item.chargeableWeight}</td>
+                    <td className="px-4 py-2.5">
+                      {item.lengthInCm} × {item.breadthInCm} × {item.heightInCm}
+                    </td>
+                    <td className="px-4 py-2.5">{item.girth}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            No item details found
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
